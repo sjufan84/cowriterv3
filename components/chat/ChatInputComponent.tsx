@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-
 interface ChatInputProps {
   input: string,
   onInputChange: (input: string) => void,
@@ -14,11 +12,11 @@ export default function ChatInputComponent({ input, onInputChange }: ChatInputPr
   
 
   return (
-    <div className="flex w-full h-full bg-white" id="chatInputContainer">
+    <div className="flex w-full h-12 bg-zinc-50" id="chatInputContainer">
       <input
-        className="flex w-full px-2 mb-1 h-full bg-white"
+        className="flex w-full px-2 mb-1 h-full bg-zinc-50 text-black focus:border-none focus:outline-none"
         value={input}
-        placeholder="How can I help you today?"
+        placeholder="Let's rock..."
         onChange={handleInputChange}
         spellCheck={false}
       />

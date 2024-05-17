@@ -2,15 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useActions, useUIState, useAIState } from 'ai/rsc';
-import { IoIosSend } from 'react-icons/io';
-\import { FaRegQuestionCircle } from "react-icons/fa";
+import { LiaGuitarSolid } from "react-icons/lia";
 import { nanoid } from 'nanoid';
 import { ClientMessage } from '../actions';
 import UserChatBubble from '../../components/chat/UserChatBubble';
 import ChatInputComponent from '../../components/chat/ChatInputComponent';
 
 export default function Chat() {
-  const [currentAssistantId, setCurrentAssistantId] = useState<string>('asst_TdPIfsaFWLSXldiRlCOuqim1');
+  const [currentAssistantId, setCurrentAssistantId] = useState<string>('asst_UifyY02rKAgHGYxHfAPpmiRf');
   const [currentThreadId, setCurrentThreadId] = useState<string>('');
   const [systemMessages, setSystemMessages] = useAIState();
   const [messages, setMessages] = useUIState();
@@ -24,7 +23,7 @@ export default function Chat() {
         id: nanoid(),
         content: input,
         role: 'user',
-        threadId: currentThreadId,
+        threadId: currentThreadId ? currentThreadId : '',
       },
     ]);
     console.log(`Calling getAnswer with input: ${input}, threadId: ${currentThreadId}, and assistantId: ${currentAssistantId}`)
@@ -35,6 +34,7 @@ export default function Chat() {
       response,
     ]);
     setInput('');
+    setCurrentThreadId(response.threadId);
   }
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -46,9 +46,9 @@ export default function Chat() {
   }, [messages]);
 
   return (
-    <div className="flex flex-col items-center bg-white px-2 text-black" id="mainPage">
-      <div className="w-full max-w-3xl flex flex-col min-h-screen items-center md:py-10 py-4 bg-white">
-        <div className="flex-1 w-full overflow-y-auto" style={{ height: 'calc(100vh - 200px)' }}>
+    <div className="min-h-full flex justify-center items-center bg-zinc-50">
+      <div className="flex flex-col items-center justify-center w-full max-w-4xl min-h-screen bg-zinc-50">
+        <div className="w-full overflow-y-auto bg-zinc-50" style={{ height: 'calc(100vh - 200px)' }}>
           {messages.map((message: ClientMessage) => (
             <div key={message.id}>{message.role === 'user' ? (
               <UserChatBubble message={message.content as string} />
@@ -58,15 +58,13 @@ export default function Chat() {
             </div>
           ))}
         </div>
-        <div className="flex flex-col md:flex-row items-center justify-center w-full fixed bottom-0 bg-white" id="chatInputContainer">
-          <div className="flex flex-row join items-center justify-center md:max-w-2xl px-8 md:px-2 w-full" id="inputRow">
-            <div className="flex join-item w-full h-full" id="chatInput">
-              <ChatInputComponent onInputChange={setInput} input={input} />
-            </div>
-            <button className="btn btn-ghost join-item hover:bg-transparent" onClick={handleUserSubmission}>
-              <IoIosSend className="text-[#54ad9c] hover:text-[#124E78] hover:bg-transparent h-8 w-8"/>
-            </button>
+        <div className="flex flex-row items-center rounded-lg border-2 border-[#17123D] shadow-xl px-4 justify-center w-full max-w-4xl fixed bottom-0 bg-zinc-50" id="chatInputContainer">
+          <div className="flex join-item w-full bg-zinc-50" id="chatInput">
+            <ChatInputComponent onInputChange={setInput} input={input} />
           </div>
+          <button className="btn btn-ghost join-item hover:bg-transparent" onClick={handleUserSubmission}>
+            <LiaGuitarSolid className="text-[#17123D] hover:text-yellow-500 hover:bg-transparent h-8 w-8"/>
+          </button>
         </div>
       </div>
     </div>
