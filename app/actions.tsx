@@ -51,11 +51,7 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
   const history = getMutableAIState();
   // const speechOutput = createStreamableValue('');
 
-  const assistantResponse = createStreamableUI(<div className="flex flex-row text-md md:text-lg items-center mt-4" id="initialAssisantResponse">
-    <span className="text-black mr-2">Writing</span>
-    <span className="loading loading-dots loading-md md:loading-lg text-black text-sm" />
-  </div>
-  );
+  const assistantResponse = createStreamableUI(<div><span className="loading loading-spinner loading-md text-red-900"></span></div>);
   let RUN_ID = '';
   let text = '';
 
