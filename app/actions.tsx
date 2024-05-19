@@ -7,6 +7,7 @@ import { Stream } from 'openai/streaming.mjs';
 import { getAIState, getMutableAIState } from 'ai/rsc';
 import Image from 'next/image';
 import AIChatBubble from '../components/chat/AIChatBubble';
+import fs from 'fs';
 
 
 export const maxDuration = 300; // 300 seconds (5min)
@@ -54,6 +55,7 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
   const assistantResponse = createStreamableUI(<div><span className="loading loading-spinner loading-md text-red-900"></span></div>);
   let RUN_ID = '';
   let text = '';
+  console.log(`Getting answer for question: ${question} with threadId: ${THREAD_ID} and assistantId: ${ASSISTANT_ID}`);
 
 
   const runQueue: { id: string; run: Stream<OpenAI.Beta.Assistants.AssistantStreamEvent>; }[] = [];
@@ -104,9 +106,6 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
                 }
               }
             });
-          } else if (event === 'thread.message.completed') {
-            console.log(`Run completed with text: ${text}`);
-            // speechOutput.update(text);
           } else if (event === 'thread.run.failed') {
             console.log(data);
           } else if (event === 'thread.run.requires_action' && 'thread.run.required_action.submit_tool_outputs') {
