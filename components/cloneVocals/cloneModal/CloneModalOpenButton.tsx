@@ -11,6 +11,8 @@ export default function VocalCloneModalOpenButton({ onCloneSuccess }: VocalClone
 
   const handleCloneSuccess = (clonedVocals: string) => {
     onCloneSuccess(clonedVocals);
+    // Close the modal
+    (document.getElementById('cloneVocalsModal') as HTMLDialogElement)?.close();
   }
 
   return (

@@ -31,7 +31,7 @@ async function convertStringToBlob(base64String: string, type: string): Promise<
 }
 
 
-export async function cloneVocals(blob: Blob, artist: string, f0Adjustment: number) {
+export async function cloneVocals(blob: Blob) {
     if (!blob) {
         alert('Please record audio first')
         return
@@ -46,15 +46,17 @@ export async function cloneVocals(blob: Blob, artist: string, f0Adjustment: numb
         console.log(`File type: ${file.type} of size ${file.size} and name ${file.name} created.`)
     } catch (error) {
         console.error('Error converting webm to wav:', error)
-        return
+        return error;
     }
 
     const formData = new FormData();
     formData.append('audio_file', file);
-    formData.append('artist', artist);
-    formData.append('f0_adjustment', f0Adjustment.toString());
-    console.log(`Calling clone vocals API with artist: ${artist} and f0_adjustment: ${f0Adjustment} and audio file: ${file} of size ${file.size} and type ${file.type} and name ${file.name}`)
-
+    // formData.append('artist', artist);
+    // formData.append('f0_adjustment', f0Adjustment.toString());
+    // console.log(`Calling clone vocals API with artist: ${artist} and f0_adjustment: ${f0Adjustment} and audio file: ${file} of size ${file.size} and type ${file.type} and name ${file.name}`)
+    console.log(`Calling clone vocals API with audio file: ${file} of size ${file.size} and type ${file.type} and name ${file.name}`)
+    
+    return `Cloned vocals received: ${file.slice(0, 100)} and appended to the form data`
     const response = await fetch('https://linercuda-7x7kgyhzra-uc.a.run.app/clone_vocals', {
         // Send the request as a POST request where the audio_file is the file
         method: 'POST',
@@ -62,7 +64,6 @@ export async function cloneVocals(blob: Blob, artist: string, f0Adjustment: numb
     });
 
     let data = await response.json();
-    console.log('Response:', data)
     const audioString = data.cloned_vocals;
 
     console.log(`Cloned vocals received: ${audioString.slice(0, 100)}`)
