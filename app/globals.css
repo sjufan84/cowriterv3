@@ -1,38 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.modal-content {
-  width: 80%;
-  height: 80%;
-  margin: auto;
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: 'translate(-50%, -50%)';
-}
-
-@media (max-width: 600px) {
-  .modal-content {
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    transform: none;
-  }
-}
-
-.responsive-row {
-  display: flex;
-  flex-direction: column;
-}
-
-.cell-content {
-  margin: 10px 0;
-}
-
-@media (min-width: 768px) {
-  .responsive-row {
-    flex-direction: row;
-  }
-}

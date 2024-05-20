@@ -153,9 +153,79 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
   };
 }
 
+export async function getClonedVocalsResponse(THREAD_ID: string, ASSISTANT_ID: string, transcriptionText: string) : Promise<ClientMessage> {
+  'use server'
+  const assistantResponse = createStreamableUI(<div><span className="loading loading-spinner loading-md text-red-900"></span></div>);
+  let RUN_ID = '';
+  let text = '';
+  console.log(`Getting cloned vocals response with threadId: ${THREAD_ID} and assistantId: ${ASSISTANT_ID}`);
+
+  const runQueue: { id: string; run: Stream<OpenAI.Beta.Assistants.AssistantStreamEvent>; }[] = [];
+
+  (async () => {
+
+    const threadMessages = await openai.beta.threads.messages.create(
+      THREAD_ID,
+      { role: "user", content: `I've just submitted some vocals with lyrics of <lyrics>${transcriptionText}</lyrics> that you've sang back to me in your voice.  
+      You could respond with something like, 'How does that sound?  Let me know what you think! -- That's just an example, 
+      adapt according to the context of our conversation and the lyrics of the vocals.'`
+      }
+    );
+
+    console.log(`Submitted clone vocals message to thread: ${THREAD_ID} with message: ${threadMessages.id}`)
+
+    const run = await openai.beta.threads.runs.create(THREAD_ID, {
+      assistant_id: ASSISTANT_ID,
+      stream: true,
+      });
+
+      runQueue.push({ id: nanoid(), run });
+
+    while (runQueue.length > 0) {
+      const latestRun = runQueue.shift();
+
+      if (latestRun) {
+        for await (const delta of latestRun.run) {
+          const { data, event } = delta;
+
+          if (event === 'thread.created') {
+            THREAD_ID = data.id;
+          } else if (event === 'thread.run.created') {
+            RUN_ID = data.id;
+          } else if (event === 'thread.message.delta') {
+            data.delta.content?.map(part => {
+              if (part.type === 'text') {
+                if (part.text) {
+                  text += part.text.value;
+                  assistantResponse.update(<AIChatBubble message={text} />);
+                }
+              }
+            });
+          } else if (event === 'thread.run.failed') {
+            console.log(data);
+          
+            }
+          }
+        }
+      }
+
+    // iF there is text, update the assistant response, otherwise return ''
+    assistantResponse.done();
+    })();
+  
+    return {
+      role: 'assistant',
+      id: nanoid(),
+      content: assistantResponse.value,
+      threadId: THREAD_ID,
+      // speechFile: speechOutput.value as string
+  };
+}
+
+
 export const AI = createAI<ServerMessage[], ClientMessage[]>({
 actions: {
-  getAnswer,
+  getAnswer, getClonedVocalsResponse
 },
 initialAIState: [],
 initialUIState: [],

@@ -9,25 +9,54 @@ import { uploadTextFile, createThreadId } from '../../components/files/helperFun
 import UserChatBubble from '../../components/chat/UserChatBubble';
 import ChatInputComponent from '../../components/chat/ChatInputComponent';
 import FileUploadButton from '../../components/files/UploadFileButton';
-import VocalCloneModalOpenButton from '../../components/cloneVocals/cloneModal/CloneModalOpenButton';
+// import VocalCloneModalOpenButton from '../../components/cloneVocals/cloneModal/CloneModalOpenButton';
+import VocalCloneModal from '../../components/cloneVocals/cloneModal/VocalCloneModal';
+
 export default function Chat() {
   const [currentAssistantId, setCurrentAssistantId] = useState<string>('asst_UifyY02rKAgHGYxHfAPpmiRf');
   const [currentThreadId, setCurrentThreadId] = useState<string>('');
+  const [currentClonedVocals, setCurrentClonedVocals] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [systemMessages, setSystemMessages] = useAIState();
   const [messages, setMessages] = useUIState();
   const [input, setInput] = useState('');
-  const { getAnswer } = useActions();
+  const { getAnswer, getClonedVocalsResponse } = useActions();
+  
 
-  const handleClonedVocalsSuccess = (clonedVocals: string) => {
+  const createClonedAudioElement = async (clonedVocals: string) => {
+    console.log(`Creating audio element for cloned vocals: ${clonedVocals.slice(0, 100)}`)
     setMessages((messages: ClientMessage[]) => [
       ...messages,
       {
         id: nanoid(),
-        content: `Cloned vocals: ${clonedVocals}`,
-        role: 'system',
+        content: <div className="flex flex-col items-start w-full mt-3" id="playClonedVocalsGroup">
+                    <p className="text-sm text-white ml-2 mb-1">Cloned Vocals:</p>
+                    <audio controls className="w-full p-1 md:p-0" id="clonedAudioPlayer">
+                      <source src={clonedVocals} type="audio/wav" />
+                      Your browser does not support the audio element.
+                    </audio>,
+                  </div>,
+        role: 'assistant',
+        threadId: currentThreadId,
       },
     ]);
+  }
+  
+  const handleClonedVocalsSuccess = async (clonedVocals: string, transcriptionText: string) => {
+    setCurrentClonedVocals(clonedVocals);
+    try {
+      const newThreadId = currentThreadId ? currentThreadId : await createThreadId();
+      console.log(`Getting cloned vocals response with threadId: ${newThreadId} and assistantId: ${currentAssistantId} and transcriptionText: ${transcriptionText}`)
+      const clonedVocalsResponse = await getClonedVocalsResponse(newThreadId, currentAssistantId, transcriptionText);
+      setMessages((messages: ClientMessage[]) => [
+        ...messages,
+        clonedVocalsResponse,
+      ]);
+    } catch (error) {
+      console.error(`Error getting cloned vocals response:`, error);
+    }
+    await createClonedAudioElement(clonedVocals);
   }
 
   const handleUserSubmission = async () => {
@@ -90,6 +119,15 @@ export default function Chat() {
             )}
             </div>
           ))}
+          {audioElement && (
+            <div className="flex flex-col items-start w-full mt-3" id="playClonedVocalsGroup">
+              <p className="text-sm text-white ml-2 mb-1">Cloned Vocals:</p>
+              <audio controls className="w-full p-1 md:p-0" id="clonedAudioPlayer">
+                <source src={audioElement.src} type="audio/wav" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
         </div>
         <div className="flex flex-col md:flex-row items-center px-4 justify-center w-full max-w-4xl fixed bottom-0 bg-zinc-50" id="chatInputContainer">
           <div className="flex flex-row items-center w-full border-2 shadow-xl rounded-lg border-[#17123D] px-4" id="chatInputGroup">
@@ -108,9 +146,7 @@ export default function Chat() {
                 <FileUploadButton onFileChange={handleFileUpload} />
               )}
             </div>
-            <div id="cloneVocalsButton" className="tooltip mt-1" data-tip="Clone Vocals">
-              <VocalCloneModalOpenButton onCloneSuccess={handleClonedVocalsSuccess} />
-            </div>
+              <VocalCloneModal onCloneSuccess={handleClonedVocalsSuccess} />
           </div>
         </div>
       </div>

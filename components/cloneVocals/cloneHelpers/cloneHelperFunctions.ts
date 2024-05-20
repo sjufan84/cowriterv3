@@ -55,9 +55,17 @@ export async function cloneVocals(blob: Blob) {
     // formData.append('f0_adjustment', f0Adjustment.toString());
     // console.log(`Calling clone vocals API with artist: ${artist} and f0_adjustment: ${f0Adjustment} and audio file: ${file} of size ${file.size} and type ${file.type} and name ${file.name}`)
     console.log(`Calling clone vocals API with audio file: ${file} of size ${file.size} and type ${file.type} and name ${file.name}`)
+
+    const transcriptionResponse = await fetch('/api/getSpeechToText', {
+        // Send the request as a POST request where the audio_file is the file
+        method: 'POST',
+        body: formData
+    });
+    let transcriptionData = await transcriptionResponse.json();
+    console.log('Transcription:', transcriptionData)
+    const transcriptionText = transcriptionData.transcription;
     
-    return `Cloned vocals received: ${file.slice(0, 100)} and appended to the form data`
-    const response = await fetch('https://linercuda-7x7kgyhzra-uc.a.run.app/clone_vocals', {
+    const response = await fetch('http://127.0.0.1:8000/clone_vocals', {
         // Send the request as a POST request where the audio_file is the file
         method: 'POST',
         body: formData
@@ -67,7 +75,10 @@ export async function cloneVocals(blob: Blob) {
     const audioString = data.cloned_vocals;
 
     console.log(`Cloned vocals received: ${audioString.slice(0, 100)}`)
-    return audioString;
+    
+    const audioBase64 = 'data:audio/wav;base64,' + audioString;
+    
+    return { audioBase64, transcriptionText };
 }
 
 export async function cloneVocalsFromFile(file: File, artist: string, f0Adjustment: number) {
