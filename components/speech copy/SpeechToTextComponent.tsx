@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime';
 import React, { useState, useEffect } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import { CiMicrophoneOn } from "react-icons/ci";
+import { MdRecordVoiceOver } from "react-icons/md";
 
 interface AudioToTextProps {
   onRecordingEnd: (transcript: string) => void;
@@ -49,9 +49,9 @@ const AudioToText = ({ onRecordingEnd }: AudioToTextProps) => {
   };*/
 
   return (
-    <div id="recordingComponent" className="tooltip flex flex-row items center" data-tip="Talk to BakeBot">
+    <div id="recordingComponent" className="tooltip flex flex-row items center mb-1" data-tip="Talk to Joel">
       <button onClick={startRecording} disabled={isRecording} className="btn btn-circle bg-transparent hover:bg-transparent border-none hover:border-none">
-        <CiMicrophoneOn size={30} color={isRecording ? '#bd081c' : '#124E78'} />
+        <MdRecordVoiceOver size={30} color={isRecording ? 'rgb(234 179 8)' : '#17123D'} />
       </button>
       {isRecording && (
         <span className="loading loading-ring mt-1 md:loading-md loading-sm" hidden={!isRecording}></span>

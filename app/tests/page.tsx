@@ -9,6 +9,7 @@ import { uploadTextFile, createThreadId } from '../../components/files/helperFun
 import UserChatBubble from '../../components/chat/UserChatBubble';
 import ChatInputComponent from '../../components/chat/ChatInputComponent';
 import FileUploadButton from '../../components/files/UploadFileButton';
+import AudioToText from '../../components/speech copy/SpeechToTextComponent';
 // import VocalCloneModalOpenButton from '../../components/cloneVocals/cloneModal/CloneModalOpenButton';
 import VocalCloneModal from '../../components/cloneVocals/cloneModal/VocalCloneModal';
 
@@ -58,6 +59,33 @@ export default function Chat() {
     }
     await createClonedAudioElement(clonedVocals);
   }
+
+  const handleSTTInput = async (transcriptionText: string) => {
+    let newThreadId = currentThreadId;
+    if (!currentThreadId) {
+      newThreadId = await createThreadId();
+      setCurrentThreadId(newThreadId);
+    }
+    setMessages((messages: ClientMessage[]) => [
+      ...messages,
+      {
+        id: nanoid(),
+        content: transcriptionText,
+        role: 'user',
+        threadId: newThreadId,
+      },
+    ]);
+    console.log(`Calling getAnswer with transcription: ${transcriptionText}, threadId: ${newThreadId}, and assistantId: ${currentAssistantId}`)
+    const response = await getAnswer(transcriptionText, newThreadId, currentAssistantId);
+
+    setMessages((messages: ClientMessage[]) => [
+      ...messages,
+      response,
+    ]);
+
+    setInput('');
+  }
+
 
   const handleUserSubmission = async () => {
     let newThreadId = currentThreadId;
@@ -138,8 +166,8 @@ export default function Chat() {
               <LiaGuitarSolid className="text-[#17123D] hover:text-red-800 hover:bg-transparent h-8 w-8"/>
             </button>
           </div>
-          <div className="flex flex-row items-center justify-center mt-2 md:mt-0 bg-zinc-50 w-full md:w-min" id="chatMenuButtons">
-            <div id="uploadFileButton" className="tooltip" data-tip="Upload File">
+          <div className="flex flex-row md:ml-2 items-center justify-center mt-2 md:mt-0 bg-zinc-50 w-full md:w-min" id="chatMenuButtons">
+            <div id="uploadFileButton">
               {isUploading ? 
                 <span className="loading loading-spinner loading-md text-yellow-500"></span>
               : (
@@ -147,6 +175,7 @@ export default function Chat() {
               )}
             </div>
               <VocalCloneModal onCloneSuccess={handleClonedVocalsSuccess} />
+              <AudioToText onRecordingEnd={handleSTTInput} />
           </div>
         </div>
       </div>

@@ -44,9 +44,11 @@ export default function VocalCloneModal({ onCloneSuccess }: VocalCloneModalProps
 
   return (
     <div id="vocalCloneModal" className="flex flex-col">
-      <button className="btn btn-circle bg-transparent hover:bg-transparent border-none hover:border-none" onClick={() => (document.getElementById('cloneVocalsModal') as HTMLDialogElement)?.showModal()}>
-        <CiMicrophoneOn className="btn btn-circle border-none hover:border-none w-8 h-8 hover:bg-transparent bg-transparent text-[#17123D] hover:text-red-800"/>
-      </button>
+      <div className='tooltip' data-tip='Clone Vocals'>
+        <button className="btn btn-circle bg-transparent hover:bg-transparent border-none hover:border-none mt-1" onClick={() => (document.getElementById('cloneVocalsModal') as HTMLDialogElement)?.showModal()}>
+          <CiMicrophoneOn className="btn btn-circle border-none hover:border-none w-8 h-8 hover:bg-transparent bg-transparent text-[#17123D] hover:text-red-800"/>
+        </button>
+      </div>
       <dialog id="cloneVocalsModal" className="modal modal-bottom sm:modal-middle">
         <div className="modal-box">
           <div className="modal-action">
@@ -59,7 +61,8 @@ export default function VocalCloneModal({ onCloneSuccess }: VocalCloneModalProps
           </div>
           {!currentRecordedVocals ? (
             <div id="vocalCloneModalBody" className="flex flex-col items-center justify-center">
-              <div className="p-4 flex flex-col items-center justify-center rounded-lg text-white bg-[#17123D]">
+              <p className="font-semibold mt-4">Record your vocals below to clone them.  The cloning process may take some time depending on the length of your recorded clip.</p>
+              <div className="p-4 flex flex-col items-center justify-center rounded-lg font-bold text-[#17123D]">
                 <AudioRecorderComponent onRecordingComplete={(blob: Blob) => setCurrentRecordedVocals(blob)} />
               </div>
             </div>
