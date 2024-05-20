@@ -82,9 +82,9 @@ export default function VocalCloneModal({ onCloneSuccess }: VocalCloneModalProps
                       </button>
                     </div>
                 ) : (
-                  <div className="flex flex-row items-center justify-center">
-                    <p className="font-bold text-zinc-50">Cloning vocals.  This may take a minute</p>
-                    <span className="loading loading-dots loading-md md:loading-lg text-slate-50"></span>
+                  <div className="flex flex-row items-center justify-center text-[#17123D]">
+                    <p className="font-bold">Cloning vocals.  This may take a minute</p>
+                    <span className="loading loading-dots loading-md md:loading-lg"></span>
                   </div>
                 )}
               </div>

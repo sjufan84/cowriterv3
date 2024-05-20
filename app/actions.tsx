@@ -52,7 +52,10 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
   const history = getMutableAIState();
   // const speechOutput = createStreamableValue('');
 
-  const assistantResponse = createStreamableUI(<div><span className="loading loading-spinner loading-md text-red-900"></span></div>);
+  const assistantResponse = createStreamableUI(<div className="flex flex-row mt-4 items-center justify-center">
+    <p className="text-md lg:text-lg text-[#17123D] mr-3">Working on it partner</p>
+    <span className="loading loading-dots loading-md large:loading-lg mt-1 text-[#17123D]"></span>
+  </div>);
   let RUN_ID = '';
   let text = '';
   console.log(`Getting answer for question: ${question} with threadId: ${THREAD_ID} and assistantId: ${ASSISTANT_ID}`);
@@ -115,11 +118,13 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
                     console.log(`Tool call: ${toolCall.function.name}`)
                     const parameters = JSON.parse(toolCall.function.arguments);
                     switch (toolCall.function.name) {
-                      case 'generateRecipe': {
-                        console.log('Placeholder function')
+                      case 'generateMusic': {
+                        assistantResponse.update(<AIChatBubble message={`I've generated the following prompt for you: ${parameters.musicGenPrompt}.`} />);
                         return {
                           tool_call_id: toolCall.id,
-                          output: 'Placeholder function',
+                          output: `You are generating music for the user for the inputs: ${parameters.musicGenPrompt}.  For now
+                          tbis is just a placeholder response, so continue the conversation as if the music has been generated.
+                          Let the user know what your ideas were for the prompt and continue the conversation.`,
                         };
                       }
                       default: {
@@ -132,7 +137,6 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
                   });
                   console.log(tool_outputs);
                   await submitToolOutputs({toolOutputs: tool_outputs, threadId: THREAD_ID, runId: RUN_ID});
-                  assistantResponse.update('');
                   break;
                 }
             }

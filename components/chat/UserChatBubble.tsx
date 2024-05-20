@@ -5,10 +5,10 @@ interface UserChatBubbleProps {
 }
 const UserChatBubble = ({ message }: UserChatBubbleProps) => {
   return (
-    <div className="chat chat-start mt-2 bg-[#17123D] text-zinc-50 p-3 rounded-lg" id="userChatComponent">
-      <strong className="text-sm">You:</strong>
-      <div className="chat-bubble text-sm">{message}</div>
+    <div className="chat chat-start mt-2 text-zinc-50 bg-[#17123D] p-3 rounded-lg" id="userChatComponent">
+      <p id="userChatText"><strong className="text-sm mr-2">You:</strong>{message}</p>
     </div>
+      
   )
 }
 
