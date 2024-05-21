@@ -6,23 +6,28 @@ import { LiaGuitarSolid } from "react-icons/lia";
 import { nanoid } from 'nanoid';
 import { ClientMessage } from '../actions';
 import { uploadTextFile, createThreadId } from '../../components/files/helperFunctions/fileHelpers';
+import { uploadImageFile, createImageFileMessage } from '../../components/files/helperFunctions/imageFileHelpers';
+import ImageFileUploadButton from '../../components/files/imageFiles/ImageFileUploadButton';
 import UserChatBubble from '../../components/chat/UserChatBubble';
 import ChatInputComponent from '../../components/chat/ChatInputComponent';
 import FileUploadButton from '../../components/files/UploadFileButton';
-import AudioToText from '../../components/speech copy/SpeechToTextComponent';
+import AudioToText from '../../components/speech/SpeechToTextComponent';
+import WelcomeScreen from '../../components/ui/WelcomeScreen';
 // import VocalCloneModalOpenButton from '../../components/cloneVocals/cloneModal/CloneModalOpenButton';
 import VocalCloneModal from '../../components/cloneVocals/cloneModal/VocalCloneModal';
+import Image from 'next/image';
 
 export default function Chat() {
   const [currentAssistantId, setCurrentAssistantId] = useState<string>('asst_UifyY02rKAgHGYxHfAPpmiRf');
   const [currentThreadId, setCurrentThreadId] = useState<string>('');
   const [currentClonedVocals, setCurrentClonedVocals] = useState<string>('');
+  const [currentImageURL, setCurrentImageURL] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [systemMessages, setSystemMessages] = useAIState();
   const [messages, setMessages] = useUIState();
   const [input, setInput] = useState('');
-  const { getAnswer, getClonedVocalsResponse } = useActions();
+  const { getAnswer, getClonedVocalsResponse, getFileResponse } = useActions();
   
 
   const createClonedAudioElement = async (clonedVocals: string) => {
@@ -112,21 +117,69 @@ export default function Chat() {
     setInput('');
   }
 
-  const handleFileUpload = async (file: File) => {
-    console.log(`Uploading file: ${file.name} with type ${file.type}`)
+  const handleImageFileChange = async (url: string) => {
     setIsUploading(true);
+    setCurrentImageURL(url);
+    // If the file is an image, convert it to base64 and set the current image URL
+    let newThreadId = currentThreadId ? currentThreadId : await createThreadId();
+    console.log(`Handling file change with threadId: ${newThreadId}`)
+    let fileId = '';
     try {
-      const fileId = await uploadTextFile(file);
-      console.log(`Uploaded file: ${fileId} with purpose assistants to vector store from ${file.name}`)
-      alert(`File ${file.name} uploaded successfully!`);
-      setIsUploading(false);
+      fileId = await uploadImageFile(url);
+      console.log(`Image file uploaded: ${fileId}`)
+      if (fileId) {
+        try {
+          const returnedThreadId = await createImageFileMessage(fileId, newThreadId);
+          if (returnedThreadId !== newThreadId) {
+            console.error(`Error creating file message: threadId mismatch.  Expected ${newThreadId}, received ${returnedThreadId}`);
+          }
+          console.log(`Returned thread id: ${returnedThreadId}.  Calling getFileResponse)`);
+          const response = await getFileResponse(newThreadId, currentAssistantId);
+          setMessages((messages: ClientMessage[]) => [
+            ...messages,
+            response,
+          ]);
+          setCurrentThreadId(returnedThreadId);
+          setIsUploading(false);
+        } catch (error) {
+          console.error(`Error getting file response: ${error}`);
+          setIsUploading(false);
+        }
+      }
     } catch (error) {
-      console.error(`Error uploading file: ${file.name} with type ${file.type}`, error);
-      alert(`Error uploading file: ${file.name} with type ${file.type}.  Please try again.`);
+      console.error(`Error handling file change: ${error}`);
       setIsUploading(false);
     }
   }
 
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      let newThreadId = currentThreadId;
+      if (!currentThreadId) {
+        newThreadId = await createThreadId();
+        setCurrentThreadId(newThreadId);
+      }
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('threadId', newThreadId);
+      const fileId = await fetch('/api/uploadTextFile', {
+        method: 'POST',
+        body: formData,
+      }).then((res) => res.json()).then((data) => console.log('File uploaded and message added'))
+      console.log(`Calling getFileResponse with threadId: ${newThreadId}, assistantId: ${currentAssistantId}`)
+      const response = await getFileResponse(newThreadId, currentAssistantId, fileId);
+      setMessages((messages: ClientMessage[]) => [
+        ...messages,
+        response,
+      ]);
+      setIsUploading(false);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setIsUploading(false);
+    }
+  }
+  
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -137,7 +190,28 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col items-center bg-zinc-50 px-2 text-black" id="mainPage">
-      <div className="flex flex-col items-center justify-center w-full max-w-4xl min-h-screen bg-zinc-50">
+      <div className="flex flex-col items-center justify-center w-full max-w-4xl min-h-screen bg-zinc-50 px-6">
+        <Image src="/artist_vault.png" alt="Artist Vault" width={300} height={300} className="mt-4" />
+        {!messages?.length && !currentImageURL && (
+          <WelcomeScreen />
+        )}
+        {currentImageURL && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={currentImageURL} 
+            alt="Uploaded image" 
+            width={200} 
+            height={200} 
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="rounded-lg mb-4 place-self-center"
+          />
+        )}
+        {isUploading && (
+          <div className="flex flex-row justify-center items-center">
+          <p className="text-[#124E78] font-bold text-md md:text-lg">Looking things over</p>
+          <span className="ml-2 mt-2 loading loading-dots loading-md md:loading-lg text-[#124E78] text-md" />
+        </div>
+        )}
         <div className="w-full overflow-y-auto bg-zinc-50" style={{ height: 'calc(100vh - 200px)' }}>
           {messages?.map((message: ClientMessage) => (
             <div key={message.id}>{message.role === 'user' ? (
@@ -171,7 +245,12 @@ export default function Chat() {
               {isUploading ? 
                 <span className="loading loading-spinner loading-md text-yellow-500"></span>
               : (
-                <FileUploadButton onFileChange={handleFileUpload} />
+                <div id="fileUploadButtons" className="flex flex-row items-center">
+                    <FileUploadButton onFileChange={handleFileUpload} />
+                  <div id="imageFileUploadButton" hidden={isUploading}>
+                    <ImageFileUploadButton onImageFileSuccess={handleImageFileChange} />
+                  </div>
+                </div>
               )}
             </div>
               <VocalCloneModal onCloneSuccess={handleClonedVocalsSuccess} />

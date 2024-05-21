@@ -12,7 +12,7 @@ export async function uploadTextFile(file: File): Promise<string> {
   return fileId;
 }
 
-export const acceptedFileTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'txt/plain', 'application/pdf', 'text/plain'];
+export const acceptedFileTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'txt/plain', 'application/pdf', 'text/plain'];
 
 export async function createThreadId(): Promise<string> {
   const response = await fetch('/api/createThreadId', {

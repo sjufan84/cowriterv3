@@ -14,6 +14,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   const input = await req.formData();
   const uploadedFile = input.get('file') as File;
+  const THREAD_ID = input.get('threadId') as string;
 
   // Create a blob from the file
   const blob = await new Blob([uploadedFile], { type: uploadedFile.type[0] });
@@ -35,7 +36,20 @@ export async function POST(req: Request) {
 
   console.log(`Uploaded file: ${file.id} to vector store ${vectorFileId}`)
 
-  return new Response (JSON.stringify({ fileId: vectorFileId }), {
+  const threadMessages = await openai.beta.threads.messages.create(
+    THREAD_ID,
+    { 
+      role: "user", 
+      content: `I've just uploaded a file for you to take a look at.  This may be lyrics, notes, or some other text related to our co-writing session.
+        Please look it over and then respond accordingly.`,
+      attachments: [{ file_id: vectorFileId, tools: [{ type: 'file_search'}] }]
+    }
+  );
+
+  console.log(`Uploaded file: ${file.id} to thread ${THREAD_ID} with purpose assistants from ${uploadedFile.name}.  Message: ${threadMessages.id} then added.`)
+
+
+  return new Response (JSON.stringify({ fileId: vectorFileId, threadId: threadMessages.thread_id }), {
     headers: { 'Content-Type': 'application/json' },
   });
 }

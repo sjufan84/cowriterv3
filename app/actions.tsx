@@ -226,10 +226,75 @@ export async function getClonedVocalsResponse(THREAD_ID: string, ASSISTANT_ID: s
   };
 }
 
+export async function getFileResponse(THREAD_ID: string, ASSISTANT_ID: string) : Promise<ClientMessage> {
+  'use server';
+  const assistantResponse = createStreamableUI('All right... let me take a look at that...');
+  let RUN_ID = '';
+  let text = '';
+
+  assistantResponse.update(
+    <div className="flex flex-row justify-center items-center">
+      <p className="text-[#124E78] font-bold text-md md:text-lg">Looking things over</p>
+      <span className="ml-2 mt-2 loading loading-dots loading-md md:loading-lg text-[#124E78] text-md" />
+    </div>
+  );
+
+  const runQueue: { id: string; run: Stream<OpenAI.Beta.Assistants.AssistantStreamEvent>; }[] = [];
+
+  (async () => {
+    
+    const run = await openai.beta.threads.runs.create(THREAD_ID, {
+      assistant_id: ASSISTANT_ID,
+      stream: true,
+    });
+
+    runQueue.push({ id: nanoid(), run });
+
+    while (runQueue.length > 0) {
+      const latestRun = runQueue.shift();
+
+      if (latestRun) {
+        for await (const delta of latestRun.run) {
+          const { data, event } = delta;
+
+          if (event === 'thread.created') {
+            THREAD_ID = data.id;
+          } else if (event === 'thread.run.created') {
+            RUN_ID = data.id;
+          } else if (event === 'thread.message.delta') {
+            data.delta.content?.map(part => {
+              if (part.type === 'text') {
+                if (part.text) {
+                  text += part.text.value
+                  assistantResponse.update(
+                    <div className="flex flex-col items-center justify-center">
+                      <AIChatBubble message={text} />
+                    </div>
+                  );
+                }
+              }
+            });
+          } else if (event === 'thread.run.failed') {
+            console.log(data);
+          }
+        }
+      }
+    }
+    assistantResponse.done();
+  })();
+    
+  return {
+    role: 'assistant',
+    id: nanoid(),
+    content: assistantResponse.value,
+    threadId: THREAD_ID,
+  };
+}
+
 
 export const AI = createAI<ServerMessage[], ClientMessage[]>({
 actions: {
-  getAnswer, getClonedVocalsResponse
+  getAnswer, getClonedVocalsResponse, getFileResponse
 },
 initialAIState: [],
 initialUIState: [],
