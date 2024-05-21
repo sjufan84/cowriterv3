@@ -195,41 +195,43 @@ export default function Chat() {
         {!messages?.length && !currentImageURL && (
           <WelcomeScreen />
         )}
-        {currentImageURL && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={currentImageURL} 
-            alt="Uploaded image" 
-            width={200} 
-            height={200} 
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="rounded-lg mb-4 place-self-center"
-          />
-        )}
-        {isUploading && (
-          <div className="flex flex-row justify-center items-center">
-          <p className="text-[#124E78] font-bold text-md md:text-lg">Looking things over</p>
-          <span className="ml-2 mt-2 loading loading-dots loading-md md:loading-lg text-[#124E78] text-md" />
-        </div>
-        )}
-        <div className="w-full overflow-y-auto bg-zinc-50" style={{ height: 'calc(100vh - 200px)' }}>
-          {messages?.map((message: ClientMessage) => (
-            <div key={message.id}>{message.role === 'user' ? (
-              <UserChatBubble message={message.content as string} />
-            ) : (
-              message.content
-            )}
-            </div>
-          ))}
-          {audioElement && (
-            <div className="flex flex-col items-start w-full mt-3" id="playClonedVocalsGroup">
-              <p className="text-sm text-white ml-2 mb-1">Cloned Vocals:</p>
-              <audio controls className="w-full p-1 md:p-0" id="clonedAudioPlayer">
-                <source src={audioElement.src} type="audio/wav" />
-                Your browser does not support the audio element.
-              </audio>
-            </div>
+        <div className="w-full overflow-y-auto bg-zinc-50 flex flex-col items-center pb-16" style={{ height: 'calc(100vh - 200px)' }}>
+          {currentImageURL && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={currentImageURL} 
+              alt="Uploaded image" 
+              width={200} 
+              height={200} 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="rounded-lg mb-4 place-self-center"
+            />
           )}
+          {isUploading && (
+            <div className="flex flex-row justify-center items-center">
+            <p className="text-[#124E78] font-bold text-md md:text-lg">Looking things over</p>
+            <span className="ml-2 mt-2 loading loading-dots loading-md md:loading-lg text-[#124E78] text-md" />
+          </div>
+          )}
+          <div className="w-full overflow-y-auto bg-zinc-50" style={{ height: 'calc(100vh - 200px)' }}>
+            {messages?.map((message: ClientMessage) => (
+              <div key={message.id}>{message.role === 'user' ? (
+                <UserChatBubble message={message.content as string} />
+              ) : (
+                message.content
+              )}
+              </div>
+            ))}
+            {audioElement && (
+              <div className="flex flex-col items-start w-full mt-3" id="playClonedVocalsGroup">
+                <p className="text-sm text-white ml-2 mb-1">Cloned Vocals:</p>
+                <audio controls className="w-full p-1 md:p-0" id="clonedAudioPlayer">
+                  <source src={audioElement.src} type="audio/wav" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex flex-col md:flex-row items-center px-4 justify-center w-full max-w-4xl fixed bottom-0 bg-zinc-50" id="chatInputContainer">
           <div className="flex flex-row items-center w-full border-2 shadow-xl rounded-lg border-[#17123D] px-4" id="chatInputGroup">

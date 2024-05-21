@@ -4,10 +4,10 @@ import { OpenAI } from 'openai';
 import { ReactNode } from 'react';
 import { createAI } from 'ai/rsc';
 import { Stream } from 'openai/streaming.mjs';
-import { getAIState, getMutableAIState } from 'ai/rsc';
-import Image from 'next/image';
+import { getMutableAIState } from 'ai/rsc';
+// import Image from 'next/image';
+// import { createMusicTest } from '../app/helperFunctions/musicGen/musicGenHelpers';
 import AIChatBubble from '../components/chat/AIChatBubble';
-import fs from 'fs';
 
 
 export const maxDuration = 300; // 300 seconds (5min)
@@ -52,7 +52,7 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
   const history = getMutableAIState();
   // const speechOutput = createStreamableValue('');
 
-  const assistantResponse = createStreamableUI(<div className="flex flex-row mt-4 items-center justify-center">
+const assistantResponse = createStreamableUI(<div className="flex flex-row mt-4 items-center justify-center">
     <p className="text-md lg:text-lg text-[#17123D] mr-3">Working on it partner</p>
     <span className="loading loading-dots loading-md large:loading-lg mt-1 text-[#17123D]"></span>
   </div>);
@@ -119,7 +119,7 @@ export async function getAnswer(question: string, THREAD_ID: string, ASSISTANT_I
                     const parameters = JSON.parse(toolCall.function.arguments);
                     switch (toolCall.function.name) {
                       case 'generateMusic': {
-                        assistantResponse.update(<AIChatBubble message={`I've generated the following prompt for you: ${parameters.musicGenPrompt}.`} />);
+                        /*assistantResponse.update(<AIChatBubble message={`I've generated the following prompt for you: ${parameters.musicGenPrompt}.`} />);*/
                         return {
                           tool_call_id: toolCall.id,
                           output: `You are generating music for the user for the inputs: ${parameters.musicGenPrompt}.  For now
@@ -212,7 +212,7 @@ export async function getClonedVocalsResponse(THREAD_ID: string, ASSISTANT_ID: s
           }
         }
       }
-
+    
     // iF there is text, update the assistant response, otherwise return ''
     assistantResponse.done();
     })();
