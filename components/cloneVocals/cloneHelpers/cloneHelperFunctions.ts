@@ -65,7 +65,7 @@ export async function cloneVocals(blob: Blob) {
     console.log('Transcription:', transcriptionData)
     const transcriptionText = transcriptionData.transcription;
     
-    const response = await fetch('http://127.0.0.1:8000/clone_vocals', {
+    const response = await fetch('https://linercuda-7x7kgyhzra-uc.a.run.app/clone_vocals', {
         // Send the request as a POST request where the audio_file is the file
         method: 'POST',
         body: formData
