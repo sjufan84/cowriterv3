@@ -1,10 +1,10 @@
 import React from 'react'
 
-interface AudioPlayerComponentProps {
+interface AudioBlobPlayerComponentProps {
   audioBlob: Blob
 }
 
-const AudioPlayerComponent = ({ audioBlob }: AudioPlayerComponentProps) => {
+const AudioBlobPlayerComponent = ({ audioBlob }: AudioBlobPlayerComponentProps) => {
 
   return (
     <div id="audioPlayerContainer" className="flex flex-col w-full items-center">
@@ -17,4 +17,4 @@ const AudioPlayerComponent = ({ audioBlob }: AudioPlayerComponentProps) => {
   )
 }
 
-export default AudioPlayerComponent
+export default AudioBlobPlayerComponent
