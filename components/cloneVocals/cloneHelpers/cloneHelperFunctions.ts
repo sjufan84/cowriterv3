@@ -19,18 +19,6 @@ async function convertWebmToWav(webmBlob: Blob): Promise<Blob> {
   return outputBlob;
 }
 
-async function convertStringToBlob(base64String: string, type: string): Promise<Blob> {
-  const byteCharacters = Buffer.from(base64String, 'base64').toString('binary');
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  console.log(`Byte array length: ${byteArray.length}`)
-  return new Blob([byteArray], { type: type });
-}
-
-
 export async function cloneVocals(blob: Blob) {
     if (!blob) {
         alert('Please record audio first')
@@ -65,7 +53,7 @@ export async function cloneVocals(blob: Blob) {
     console.log('Transcription:', transcriptionData)
     const transcriptionText = transcriptionData.transcription;
     
-    const response = await fetch('https://linercuda-7x7kgyhzra-uc.a.run.app/clone_vocals', {
+    const response = await fetch('http://localhost:8000/clone_vocals', {
         // Send the request as a POST request where the audio_file is the file
         method: 'POST',
         body: formData
@@ -117,4 +105,49 @@ export async function convertAudioFileToBase64(file: File): Promise<string> {
         }
         reader.onerror = reject;
     });
+}
+
+export async function testCloneVocalsStream(blob: Blob) {
+    if (!blob) {
+        alert('Please record audio first')
+        return
+    }
+    let fileToSend: File;
+    
+    try {
+        let newBlob = await convertWebmToWav(blob);
+        fileToSend = new File([newBlob], 'audio.wav', { type: 'audio/wav' });
+        console.log(`File type: ${fileToSend.type} of size ${fileToSend.size} and name ${fileToSend.name} created.`)
+    } catch (error) {
+        console.error('Error converting webm to wav:', error)
+        return error;
+    }
+    const formData = new FormData();
+    formData.append('audio_file', fileToSend);
+    let returnedAudioBlob: Blob | null = null;
+
+    const transcriptionResponse = await fetch('/api/getSpeechToText', {
+      // Send the request as a POST request where the audio_file is the file
+      method: 'POST',
+      body: formData
+    });
+    let transcriptionData = await transcriptionResponse.json();
+    console.log('Transcription:', transcriptionData)
+    const transcriptionText = transcriptionData.transcription;
+    let audioString = '';
+    const response = await fetch('http://localhost:8000/clone_vocals', {
+        // Send the request as a POST request where the audio_file is the file
+        method: 'POST',
+        body: formData
+    }).then(response => response.blob())
+    .then(blob => {
+        returnedAudioBlob = blob;
+        return blob.arrayBuffer();
+    }).then(buffer => { 
+        audioString = Buffer.from(buffer).toString('base64');
+        console.log(`Cloned vocals received: ${audioString.slice(0, 100)}`)
+        return 'data:audio/wav;base64,' + audioString;
+    });
+    
+    return { audioString, transcriptionText };
 }
