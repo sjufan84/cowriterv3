@@ -1,3 +1,5 @@
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+
 export async function convertBlobToString(blob: Blob): Promise<string> {
   // Convert audio blob to base64 encoded string
   const reader = new FileReader();
@@ -19,4 +21,23 @@ export async function convertStringToBlob(audioString: string): Promise<Blob> {
   }
   const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
   return blob;
+}
+
+export async function convertWavToOGG(audioBlob: Blob): Promise<Blob> {
+  const ffmpeg = new FFmpeg();
+  await ffmpeg.load();
+
+  const inputName = 'input.wav';
+  const outputName = 'output.ogg';
+
+  const data = await audioBlob.arrayBuffer();
+
+  ffmpeg.writeFile(inputName, new Uint8Array(data));
+
+  await ffmpeg.exec(['-i', inputName, outputName]);
+
+  const outputData = await ffmpeg.readFile(outputName);
+  const outputBlob = new Blob([outputData], { type: 'audio/ogg' });
+
+  return outputBlob;
 }

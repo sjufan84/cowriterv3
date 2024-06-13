@@ -8,8 +8,8 @@ interface CloneVocalsSubmitButtonProps {
 
 const CloneVocalsSubmitButton = ({ audioBlob, onSubmit }: CloneVocalsSubmitButtonProps) => {
   return (
-    <div id="cloneVocalsSubmitButton">
-      <button className="btn btn-ghost text-[#17123D] border-[#17123D] mt-4 md:mt-0 w-full md:w-1/2" onClick={async () => {
+    <div id="cloneVocalsSubmitButton" className="w-full">
+      <button className="btn btn-ghost text-[#17123D] border-[#17123D] mt-4 md:mt-0 w-full" onClick={async () => {
         if (audioBlob) {
           const audioString = await convertBlobToString(audioBlob)
           onSubmit(audioString)

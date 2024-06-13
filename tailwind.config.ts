@@ -19,5 +19,5 @@ export default withUt({
       },
     },
   },
-  plugins: [require('daisyui')],
+  plugins: [require("tailwindcss-animate"), require('daisyui')],
 });

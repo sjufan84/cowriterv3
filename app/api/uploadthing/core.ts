@@ -22,6 +22,16 @@ export const ourFileRouter = {
       return { metadata, file };
     }),
 
+  audioUploader: f({ 
+    "audio/x-wav": { maxFileSize: "32MB" },
+  })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // This code RUNS ON YOUR SERVER after upload
+      console.log("metadata", metadata);
+      console.log("file url", file.url);
+      return { metadata, file };
+    }),
+
   textUploader: f({ 
     "application/pdf": { maxFileSize: "16MB" },
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: "16MB" },
@@ -34,5 +44,7 @@ export const ourFileRouter = {
       return { metadata, file, fileType: "text" };
     }),
 } satisfies FileRouter;
+
+
  
 export type OurFileRouter = typeof ourFileRouter;

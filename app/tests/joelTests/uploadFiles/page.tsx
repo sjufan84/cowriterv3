@@ -1,65 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { convertStringToBlob } from '../components/files/fileHelpers';
 import Image from 'next/image';
 import UploadFileComponent from '../components/files/UploadFileComponent';
-import AudioBlobPlayerComponent from '../components/AudioBlobPlayerComponent';
-import AudioStringPlayerComponent from '../components/AudioStringPlayerComponent';
+import NewAudioPlayerComponent from './components/NewAudioPlayerComponent';
 import CloneVocalsSubmitButton from '../components/CloneVocalsSubmitButton';
 
 export default function JoelTestsUploadFiles() {
-  const [originalAudio, setOriginalAudio] = useState<Blob | null>(null);
-  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  // const [originalAudio, setOriginalAudio] = useState<Blob | null>(null);
+  // const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [isCloneVocalsLoading, setIsCloneVocalsLoading] = useState<boolean>(false);
-  const [clonedAudioString, setClonedAudioString] = useState<string | null>(null);
-  const [clonedAudioBlob, setClonedAudioBlob] = useState<Blob | null>(null);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [currentAudioURL, setCurrentAudioURL] = useState<string | null>(null);
+  const [clonedAudioURL, setClonedAudioURL] = useState<string | null>(null);
   
-  const handleFileUpload = (file: File) => {
-    // Create a blob from the file
-    const audioBlob = new Blob([file], { type: file.type });
-    setOriginalAudio(audioBlob);
-  }
-
-  const handleClonedVocals = (audioString: string) => {
-    const audioElement = new Audio(`data:audio/wav;base64,${audioString}`);
-    // Return the audio element
-    return audioElement;
-  }
-
-  useEffect(() => {
-    if (clonedAudioString) {
-      // Create an audio element from the cloned vocals
-      const audioElement = handleClonedVocals(clonedAudioString)
-      setAudioElement(audioElement)
-      console.log('Audio element created from cloned vocals:')
-    }
-  }
-  , [clonedAudioString])
-
-
-  const handleVocalCloneSubmit = async (audioString: string) => {
-    setIsCloneVocalsLoading(true);
-    console.log(`Submitting audio string: ${audioString.slice(0, 10)}`);
-    let clonedAudioString = null;
-    try {
-      clonedAudioString = await fetch('/api/cloneVocals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ audioString: audioString })
-      }).then(res => res.json());
-      console.log(`Received cloned audio string ${clonedAudioString.audioData.slice(0, 10)} with sample rate ${clonedAudioString.sampleRate} and audio blob ${clonedAudioString.audioBlob}`);
-      // Convert the cloned audio string to a blob
-      setClonedAudioBlob(clonedAudioString.audioBlob);
-      setClonedAudioString(clonedAudioString.audioData);
-
-    } catch (error) {
-      console.error(`Error converting audio string to blob: ${error}`);
-    }
-    setIsCloneVocalsLoading(false);
+  const handleVocalCloneSubmit = async () => {
+    console.log(`Submitting audio URL: ${currentAudioURL}`);
   }
 
   return (
@@ -67,45 +22,46 @@ export default function JoelTestsUploadFiles() {
       <div className="flex flex-col w-full max-w-2xl min-h-screen bg-zinc-50 px-6">
         <Image src="/artist_vault.png" alt="Artist Vault" width={300} height={300} className="mt-4 self-center mb-6" />
         <div className="flex flex-col w-full bg-zinc-50 items-center" id="uploadFilesContainer">
-          {!originalAudio && !clonedAudioBlob && (
+          {!currentAudioURL && !clonedAudioURL && (
           <div className="flex flex-col w-full items-center mt-4" id="uploadFilesButtonGroup">
-            <h1 className="text-2x font-bold text-center">Upload Your Audio File:</h1>
-            <UploadFileComponent onFileUpload={(file) => setCurrentFile(file)} />
-            {currentFile && (
-              <button className="btn md:btn-lg btn-ghost text-[#17123D] border-[#17123D] mt-4 w-1/2" onClick={() => handleFileUpload(currentFile)}>
-                Upload File
-              </button>
-            )}
+            <h1 className="text-xl font-semibold text-center">Upload Your Audio File:</h1>
+            <UploadFileComponent onAudioFileUpload={setCurrentAudioURL} />
           </div>
           )}
-          {originalAudio && !clonedAudioBlob && (
-            <div className="flex flex-col w-full justify-center mt-4" id="audioPlayerContainer">
-              <label className="text-[#17123D] self-start text-sm ml-3 mb-2 font-semibold">Original Audio:</label>
-              <AudioBlobPlayerComponent audioBlob={originalAudio as Blob} />
-              <div className="flex flex-col md:flex-row w-full mt-4" id="originalAudioButtonChoiceGroup">
-                <button className="btn btn-ghost text-[#17123D] md:mr-4 border-[#17123D] mt-4 md:mt-0 w-full md:w-1/2" onClick={() => setOriginalAudio(null)}>
-                  Choose Another File
-                </button>
+          {currentAudioURL && !clonedAudioURL && (
+            <div className="flex flex-col w-full mt-4" id="audioPlayerContainer">
+              <label className="form-control w-full flex flex-col items-center">
+                <div className="label">
+                  <span className="label-text font-semibold text-black mb-2 text-lg">Original Audio</span>
+                </div>
+                <NewAudioPlayerComponent src={currentAudioURL} />
+              </label>
                 {!isCloneVocalsLoading ? (
-                  <CloneVocalsSubmitButton audioBlob={originalAudio} onSubmit={handleVocalCloneSubmit} />
+                  <div id="cloneVocalsButtonSelectGroup" hidden={isCloneVocalsLoading} className="flex flex-col w-full md:flex-row mt-4 justify-between">
+                    <button 
+                      className="btn btn-ghost text-[#17123D] border-[#17123D] mt-4 md:mt-0 w-full md:w-2/5" 
+                      onClick={handleVocalCloneSubmit}
+                    >
+                      Clone Vocals
+                    </button>
+                    <button className="btn btn-ghost text-[#17123D] border-[#17123D] mt-4 md:mt-0 w-full md:w-2/5" onClick={async () => {
+                      setCurrentAudioURL(null);
+                      setClonedAudioURL(null);
+                    }}>
+                      Upload New Audio
+                    </button>
+                  </div>
                 ) : (
-                  <div className="flex flex-col md:flex-row items-center justify-center mt-2" id="cloneVocalsLoading">
-                    <p className="text-[#17123D] font-semibold">Cloning Vocals.  This may take a second.</p>
-                    <span className="loading loading-dots loading-lg md:ml-2 mt-2 md:mt-0"></span>
+                  <div className="flex flex-col md:flex-row w-full items-center mt-4" id="cloneVocalsLoadingSpinner" hidden={!isCloneVocalsLoading}>
+                    <p className="text-[#17123D] font-semibold mt-2">Cloning Vocals.  This may take a minute...</p>
+                    <span className="loading loading-dots loading-md md:loading-lg mt-4 md:mt-1 md:ml-2"></span>
                   </div>
                 )}
-              </div>
             </div>
-            )}
-              {audioElement && (
-              <div className="flex flex-col w-full mt-4" id="clonedAudioPlayerContainer">
-                <label className="text-[#17123D] self-start text-sm ml-3 mb-2 font-semibold">Cloned Audio:</label>
-                <audio controls className="w-full p-1 md:p-0" id="clonedAudioPlayer">
-                  <source src={audioElement.src} type="audio/wav" />
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
+          )}
+          {currentAudioURL && clonedAudioURL && (
+            <p className="text-[#17123D] font-semibold">Placeholder</p>
+          )}
         </div>
       </div>
     </div>
