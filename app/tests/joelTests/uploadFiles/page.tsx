@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { cloneAudioFromURL } from '../components/files/fileHelpers';
 import Image from 'next/image';
 import UploadFileComponent from '../components/files/UploadFileComponent';
 import NewAudioPlayerComponent from './components/NewAudioPlayerComponent';
-import CloneVocalsSubmitButton from '../components/CloneVocalsSubmitButton';
 
 export default function JoelTestsUploadFiles() {
   // const [originalAudio, setOriginalAudio] = useState<Blob | null>(null);
@@ -12,9 +12,36 @@ export default function JoelTestsUploadFiles() {
   const [isCloneVocalsLoading, setIsCloneVocalsLoading] = useState<boolean>(false);
   const [currentAudioURL, setCurrentAudioURL] = useState<string | null>(null);
   const [clonedAudioURL, setClonedAudioURL] = useState<string | null>(null);
+
+  // Create a function to create a download link for the audio url
+  const createDownloadLink = (url: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cloned_audio.wav';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
   
   const handleVocalCloneSubmit = async () => {
-    console.log(`Submitting audio URL: ${currentAudioURL}`);
+    setIsCloneVocalsLoading(true);
+    try {
+      console.log(`Cloning vocals from URL: ${currentAudioURL}`)
+      const clonedAudio = await fetch('/api/cloneVocalsFromURL', {
+        method: 'POST',
+        body: JSON.stringify({ audioURL: currentAudioURL, f0upKey: 0}),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await clonedAudio.json();
+      console.log(`Received cloned audio URL: ${data.returnedURL}`);
+      const url = data.returnedURL;
+      setClonedAudioURL(url);
+    } catch (error) {
+      console.error(`Error cloning vocals: ${error}`);
+    }
+    setIsCloneVocalsLoading(false);
   }
 
   return (
@@ -60,7 +87,29 @@ export default function JoelTestsUploadFiles() {
             </div>
           )}
           {currentAudioURL && clonedAudioURL && (
-            <p className="text-[#17123D] font-semibold">Placeholder</p>
+            <div className="flex flex-col w-full mt-4" id="clonedAudioPlayerContainer">
+              <label className="form-control w-full flex flex-col items-center mb-4">
+                <div className="label">
+                  <span className="label-text font-semibold text-[#17123D] mb-2 text-lg">Original Audio</span>
+                </div>
+                <NewAudioPlayerComponent src={currentAudioURL} />
+              </label>
+              <label className="form-control w-full flex flex-col items-center">
+                <div className="label">
+                  <span className="label-text font-semibold text-[#17123D] mb-2 text-lg">Cloned Audio</span>
+                </div>
+                <NewAudioPlayerComponent src={clonedAudioURL} />
+              </label>
+              <button className="btn btn-ghost bg-[#17123D] text-[#fafafa] mt-4 w-full" onClick={() => createDownloadLink(clonedAudioURL)}>
+                Download Cloned Audio
+              </button>
+              <button className="btn btn-ghost bg-[#17123D] text-[#fafafa] mt-4 w-full" onClick={async () => {
+                setCurrentAudioURL(null);
+                setClonedAudioURL(null);
+              }}>
+                Upload New Audio
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -41,3 +41,23 @@ export async function convertWavToOGG(audioBlob: Blob): Promise<Blob> {
 
   return outputBlob;
 }
+
+export async function cloneAudioFromURL(url: string, f0upKey: number = 0): Promise<string> {
+  const response = await fetch('http://127.0.0.1:8000/invocations', {
+    method: 'POST',
+    body: JSON.stringify({ audio_url: url, f0up_key: f0upKey }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+  console.log(data);
+
+  const audioArray = data[0]["generated_audio"]
+  const sampleRate = data[0]["sample_rate"]
+
+  console.log(`Received audio data: ${audioArray.slice(0, 10)} and sample rate: ${sampleRate}`);
+
+  return audioArray;
+}

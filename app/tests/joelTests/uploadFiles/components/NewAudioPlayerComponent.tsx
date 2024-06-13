@@ -11,9 +11,9 @@ interface AudioPlayerNewProps {
 export default function NewAudioPlayerComponent({ src, onPlay }: AudioPlayerNewProps) {
   return (
     <AudioPlayer
-      autoPlay
       src={src}
       onPlay={onPlay}
+      
     />
   );
 }
