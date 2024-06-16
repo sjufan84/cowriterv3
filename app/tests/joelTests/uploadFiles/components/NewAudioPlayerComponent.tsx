@@ -1,19 +1,12 @@
-import AudioPlayer, { RHAP_UI } from 'react-h5-audio-player';
-import 'react-h5-audio-player/lib/styles.css';
-// import 'react-h5-audio-player/lib/styles.less' Use LESS
-// import 'react-h5-audio-player/src/styles.scss' Use SASS
-
-
 interface AudioPlayerNewProps {
   src: string;
-  onPlay?: (e: any) => void;
 }
-export default function NewAudioPlayerComponent({ src, onPlay }: AudioPlayerNewProps) {
+export default function NewAudioPlayerComponent({ src }: AudioPlayerNewProps) {
   return (
-    <AudioPlayer
+    <audio
       src={src}
-      onPlay={onPlay}
-      
+      controls
+      className="bg-transparent rounded-lg p-1 md:p-0 w-full"
     />
   );
 }

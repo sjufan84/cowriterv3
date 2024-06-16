@@ -1,18 +1,5 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 
-export async function convertBlobToString(blob: Blob): Promise<string> {
-  // Convert audio blob to base64 encoded string
-  const reader = new FileReader();
-  reader.readAsDataURL(blob);
-  return new Promise((resolve) => {
-    reader.onloadend = () => {
-      const base64data = reader.result as string;
-      const audioString = base64data.split(',')[1];
-      resolve(audioString);
-    }
-  });
-}
-
 export async function convertStringToBlob(audioString: string): Promise<Blob> {
   const binaryString = atob(audioString);
   const arrayBuffer = new Uint8Array(binaryString.length);
@@ -60,4 +47,23 @@ export async function cloneAudioFromURL(url: string, f0upKey: number = 0): Promi
   console.log(`Received audio data: ${audioArray.slice(0, 10)} and sample rate: ${sampleRate}`);
 
   return audioArray;
+}
+
+export async function convertWebmToWavFile(webmBlob: Blob): Promise<File> {
+  const ffmpeg = new FFmpeg();
+  await ffmpeg.load();
+
+  const inputName = 'input.webm';
+  const outputName = 'output.wav';
+
+  const data = await webmBlob.arrayBuffer();
+
+  ffmpeg.writeFile(inputName, new Uint8Array(data));
+
+  await ffmpeg.exec(['-i', inputName, outputName]);
+
+  const outputData = await ffmpeg.readFile(outputName);
+  const outputBlob = new Blob([outputData], { type: 'audio/wav' });
+
+  return new File([outputBlob], 'output.wav', { type: 'audio/wav' });
 }

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { cloneAudioFromURL } from '../components/files/fileHelpers';
+import { FaRecordVinyl } from "react-icons/fa6";
 import Image from 'next/image';
 import UploadFileComponent from '../components/files/UploadFileComponent';
 import NewAudioPlayerComponent from './components/NewAudioPlayerComponent';
+import Link from 'next/link';
 
 export default function JoelTestsUploadFiles() {
   // const [originalAudio, setOriginalAudio] = useState<Blob | null>(null);
@@ -12,6 +13,7 @@ export default function JoelTestsUploadFiles() {
   const [isCloneVocalsLoading, setIsCloneVocalsLoading] = useState<boolean>(false);
   const [currentAudioURL, setCurrentAudioURL] = useState<string | null>(null);
   const [clonedAudioURL, setClonedAudioURL] = useState<string | null>(null);
+  const [currentArtist, setCurrentArtist] = useState<string>('Joel');  // Artist name
 
   // Create a function to create a download link for the audio url
   const createDownloadLink = (url: string) => {
@@ -26,10 +28,10 @@ export default function JoelTestsUploadFiles() {
   const handleVocalCloneSubmit = async () => {
     setIsCloneVocalsLoading(true);
     try {
-      console.log(`Cloning vocals from URL: ${currentAudioURL}`)
+      console.log(`Cloning vocals from URL: ${currentAudioURL} for artist: ${currentArtist}`);
       const clonedAudio = await fetch('/api/cloneVocalsFromURL', {
         method: 'POST',
-        body: JSON.stringify({ audioURL: currentAudioURL, f0upKey: 0}),
+        body: JSON.stringify({ audioURL: currentAudioURL, f0upKey: 0, artist: currentArtist }),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -65,6 +67,20 @@ export default function JoelTestsUploadFiles() {
               </label>
                 {!isCloneVocalsLoading ? (
                   <div id="cloneVocalsButtonSelectGroup" hidden={isCloneVocalsLoading} className="flex flex-col w-full md:flex-row mt-4 justify-between">
+                    <label
+                      className="label label-text-alt font-semibold text-[#17123D] mb-2 text-lg"
+                      htmlFor="artistSelect"
+                    >
+                      Select Artist:
+                    </label>
+                    <select 
+                      className="select select-bordered border-blue-900 w-full md:w-2/5" 
+                      value={currentArtist}
+                      onChange={(e) => setCurrentArtist(e.target.value)}
+                    >
+                      <option value="Joel">Joel</option>
+                      <option value="Chuck Berry">Chuck Berry</option>
+                    </select>
                     <button 
                       className="btn btn-ghost text-[#17123D] border-[#17123D] mt-4 md:mt-0 w-full md:w-2/5" 
                       onClick={handleVocalCloneSubmit}
@@ -111,6 +127,12 @@ export default function JoelTestsUploadFiles() {
               </button>
             </div>
           )}
+          <Link href="/tests/joelTests/recordAudio" className="w-full flex flex-row items-center justify-center fixed bottom-10">
+            <button className="btn btn-lg btn-ghost text-2xl hover:bg-transparent text-[#17123D] w-full">
+              Record Audio
+              <FaRecordVinyl className="text-[#17123D] ml-3 mt-0.5" size={35} />
+            </button>
+          </Link>
         </div>
       </div>
     </div>
