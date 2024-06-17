@@ -8,9 +8,12 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   const input = await req.json();
-  const f0upKey: number = input.f0upKey ? input.f0upKey : 0;  // F0up key
-  const audioURL = input.audioURL;  // Base64 encoded audio string
+  const f0upKey: number = input.f0up_key ? input.f0up_key : 0;  // Pitch adjustment
+  const audioURL = input.audio_url;
   const artist = input.artist ? input.artist : 'Joel';  // Artist name
+  const index_rate = input.index_rate ? input.index_rate : 0.66;  // Index rate
+  const filter_radius = input.filter_radius ? input.filter_radius : 3;  // Filter radius
+  const protect = input.protect ? input.protect : 0.33;  // Protect
   
   console.log(`Received f0up key: ${f0upKey} and audio string: ${audioURL.slice(0, 10)}`);
 
@@ -19,6 +22,9 @@ export async function POST(req: Request) {
     f0up_key: f0upKey,
     audio_url: audioURL,
     artist: artist,
+    protect: protect,
+    index_rate: index_rate,
+    filter_radius: filter_radius,
   });
 
   console.log(`Prepared payload: ${payload.slice(0, 10)} to send to SageMaker endpoint`);
