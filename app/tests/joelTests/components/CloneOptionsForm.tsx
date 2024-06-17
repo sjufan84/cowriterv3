@@ -20,7 +20,7 @@ const CloneOptionsForm = ({ audioURL, onSubmit }: CloneOptionsFormProps) => {
     e.preventDefault()
     onSubmit(formData)
   }
-  
+
   return (
     <div id="cloneOptionsForm" className="flex flex-col w-full mt-4">
       <form className="flex flex-col w-full" id="cloneOptionsForm" onSubmit={handleFormSubmit}>
@@ -56,7 +56,6 @@ const CloneOptionsForm = ({ audioURL, onSubmit }: CloneOptionsFormProps) => {
           <input type="range" min={0.00} max="0.50" defaultValue="0.33" className="range range-sm" step="0.01" onChange={(e) => setFormData({...formData, protect: Number(e.target.value)})} />
           <div className="w-full flex justify-between text-sm px-2">
             <span>0</span>
-            <span>0.33</span>
             <span>0.5</span>
           </div>
         </label>
